@@ -37,6 +37,7 @@ import java.awt.Font;
 import javax.swing.JTable;
 import java.awt.Dimension;
 
+
 public class duplicateOutput extends JPanel {
 	
 	private String line;
@@ -46,8 +47,11 @@ public class duplicateOutput extends JPanel {
 	private int FireIce=26;
 	private int splitFireIce=25;
 	private JTable table;
+	public String textFileNameInput="";
+
 	private int columnNumber=0;
-	private String textFileName="";
+	private File lastPath;  //zzy
+	
 	public duplicateOutput(){
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -105,7 +109,8 @@ public class duplicateOutput extends JPanel {
 		JButton btnUpload = new JButton("Upload");
 		btnUpload.setBounds(710, 106, 83, 29);
 		btnUpload.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				textOutput.setText(""); 
 				duplicateDisplay.setText("");
 				duplicates.setText("");
@@ -113,8 +118,15 @@ public class duplicateOutput extends JPanel {
 				model.setColumnCount(0);
 				model.fireTableDataChanged();
 				
+				
+				
 				JFileChooser fileChooser = new JFileChooser();	
 				fileChooser.setMultiSelectionEnabled(true);
+				
+				if (lastPath != null) 
+				{
+					fileChooser.setCurrentDirectory(lastPath);
+				}
 				int returnVal = fileChooser.showOpenDialog(null); //replace null with your swing container
 				try {
 					
@@ -122,8 +134,10 @@ public class duplicateOutput extends JPanel {
 				if(returnVal == JFileChooser.APPROVE_OPTION)
 				{
 					file = fileChooser.getSelectedFile(); 
-					textFileName=fileChooser.getSelectedFile().getName();
-					textFileName=textFileName.substring(0, textFileName.lastIndexOf("."));
+					textFileNameInput=fileChooser.getSelectedFile().getAbsolutePath();
+							//					textFileNameInput=textFileNameInput.substring(0, textFileNameInput.lastIndexOf("."));
+					lastPath = file.getParentFile(); // zzy
+					
 				}
 				
 				BufferedReader in = new BufferedReader(new FileReader(file));
@@ -132,10 +146,11 @@ public class duplicateOutput extends JPanel {
 					textOutput.append(line + "\n");
 					line = in.readLine();
 				}
-					} catch (IOException e1) {
+					} catch (IOException e1) 
+					{
 						e1.printStackTrace();
 					}
-				}
+			}
 		});
 		setLayout(null);
 		add(btnUpload);
@@ -149,7 +164,7 @@ public class duplicateOutput extends JPanel {
 				int defEndIndex=0;
 				int foundIndex=0;
 				String defStr="working unit Auto waiting work Operation by:"; 
-				String FFduplicationCheck=" working unit Auto laser barcode done check";
+//				String FFduplicationCheck=" working unit Auto laser barcode done check";
 				
 				int count=0; 
 				//int errorChecker=-2;
@@ -179,11 +194,11 @@ public class duplicateOutput extends JPanel {
 								//System.out.println(defEndIndex);
 								if(lastIndex != -1&&((defEndIndex-defStartIndex-lastIndex)>=34))
 								{
-									
-										if(!amountStr.substring(lastIndex,lastIndex+34).contains("working"))
+									// unit Auto laser barcode done check
+										if(!amountStr.substring(lastIndex,lastIndex+34).contains("working")) // Zhengyi 210817
 										{
 											foundIndex=lastIndex;
-										//	System.out.println(lastIndex);
+											System.out.println(lastIndex);
 											lastIndex=0;
 											escapeSearch=2;
 											break;
@@ -209,7 +224,7 @@ public class duplicateOutput extends JPanel {
 								//count++;
 						    	//duplicateCount.setText(Integer.toString(count));
 						    	
-								//System.out.println(finalString);
+								System.out.println(finalString);
 							}
 							escapeSearch=0;
 						
@@ -223,6 +238,7 @@ public class duplicateOutput extends JPanel {
 						idRange=str.length()-1-lastIndex;
 						if(lastIndex==-1)
 							break;
+						// Zhengyi 210817
 						else if(idRange>=34&&!str.substring(lastIndex,lastIndex+34).contains("working"))
 						{
 							foundIndex=lastIndex;
@@ -287,7 +303,10 @@ public class duplicateOutput extends JPanel {
 							if(tempIndex2!=-1)
 							{
 								noMarking=numberduplication(textOutput.getText().toString(),strTemp1+FFduplicationCheck);
-								if(noMarking>FireIce)
+								System.out.println(noMarking);
+								System.out.println(FireIce);
+								System.out.println(splitFireIce);
+								if(noMarking>=FireIce*2)
 								{
 									duplicationCount=noMarking/splitFireIce;
 									duplicationList++;
@@ -498,27 +517,29 @@ public class duplicateOutput extends JPanel {
 				     fileChooser.setDialogTitle("Choose Only File Location");
 				     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-				     int returnValue = fileChooser.showSaveDialog(null) ;
+//				     int returnValue = fileChooser.showSaveDialog(null) ;
 
 				    
-				    // File file = new File(textFileName);
+				    // File file = new File(textFileNameInput);
 				   // fileChooser.setSelectedFile(file);
 				     
 				     
 //				     if(returnValue == JFileChooser.APPROVE_OPTION&&fileChooser.getSelectedFile().getName() == null)
 //				     {
 //				    	 String fileName=fileChooser.getSelectedFile().getAbsolutePath();
-//				    	 exp.exportTable(table, new File(fileName+"\\"+textFileName+".xls"));
+//				    	 exp.exportTable(table, new File(fileName+"\\"+textFileNameInput+".xls"));
 //				    	 
 //				     } 
-				     if( returnValue == JFileChooser.APPROVE_OPTION ) 
-				     {   
+//				     if( returnValue == JFileChooser.APPROVE_OPTION ) 
+				     {   // zzy with Jay
 				    	 
-				    	 	String directories=fileChooser.getSelectedFile().getParent();
-				    	 	System.out.println(directories+"HI");
-				    	 	String fileName=textFileName;
-				    	 	System.out.println(fileChooser.getSelectedFile().getName());
-				            exp.exportTable(table, new File(directories+"\\"+fileName+".xls"));
+//				    	 	String directories=textFileNameInput.getSelectedFile().getPath(); // fileChooser
+//				    	 	System.out.println(directories);
+				    	 	String fileNameOutput = textFileNameInput + ".xls";
+//				    	 	System.out.println(fileChooser.getSelectedFile().getName());
+//				            exp.exportTable(table, new File(directories+"\\"+fileName+".xls"));
+				    	 	System.out.println(fileNameOutput);
+				    	 	 exp.exportTable(table, new File(fileNameOutput));
 				     }
 				    
 				    
@@ -552,8 +573,8 @@ public class duplicateOutput extends JPanel {
 				else
 				{
 					IF.setSelected(true);
-					FireIce=35;
-					splitFireIce=35;
+					FireIce=40;
+					splitFireIce=40;
 				}
 				
 			}
@@ -563,13 +584,14 @@ public class duplicateOutput extends JPanel {
 				if(IF.isSelected())
 				{
 					FF.setSelected(false);
-					FireIce=25;
+					FireIce=40;
 					findstr="MSAXF";
+					splitFireIce=40;
 				}
 				else
 				{
 					FF.setSelected(true);
-					FireIce=35;
+					FireIce=26;
 					
 				}
 			}
